@@ -83,3 +83,56 @@ variable "ssh_public_key" {
   type        = string
   default     = ""
 }
+
+# Production VM Configuration
+# pfSense
+variable "pfsense_enabled" {
+  description = "Enable pfSense VM creation"
+  type        = bool
+  default     = false  # Disabled by default, enable when ready
+}
+
+variable "pfsense_template" {
+  description = "Template for pfSense VM (optional, can use ISO)"
+  type        = string
+  default     = ""
+}
+
+# T-Pot Sensor
+variable "tpot_enabled" {
+  description = "Enable T-Pot Sensor VM creation"
+  type        = bool
+  default     = false
+}
+
+variable "tpot_template" {
+  description = "Template for T-Pot VM (Debian/Ubuntu)"
+  type        = string
+  default     = "ubuntu-22.04-cloudinit"
+}
+
+# Malcolm
+variable "malcolm_enabled" {
+  description = "Enable Malcolm VM creation"
+  type        = bool
+  default     = false
+}
+
+variable "malcolm_template" {
+  description = "Template for Malcolm VM (Ubuntu)"
+  type        = string
+  default     = "ubuntu-22.04-cloudinit"
+}
+
+# CTF Challenges
+variable "ctf_enabled" {
+  description = "Enable CTF Challenges VM creation"
+  type        = bool
+  default     = false
+}
+
+variable "ctf_template" {
+  description = "Template for CTF VM (Ubuntu)"
+  type        = string
+  default     = "ubuntu-22.04-cloudinit"
+}

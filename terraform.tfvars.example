@@ -25,3 +25,22 @@ test_vm_network_bridge = "vmbr1"
 ssh_public_key = <<-EOT
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC... user@host
 EOT
+
+# Production VM Configuration
+# Enable VMs you want to create (all disabled by default for safety)
+
+# pfSense - Router/Firewall
+pfsense_enabled  = false  # Set to true when ready to create
+pfsense_template = ""     # Leave empty to use ISO, or specify template name
+
+# T-Pot Sensor - Honeypot Platform
+tpot_enabled  = false  # Set to true when ready to create
+tpot_template = "ubuntu-22.04-cloudinit"  # Or "debian-12-cloudinit"
+
+# Malcolm - Network Analysis
+malcolm_enabled  = false  # Set to true when ready to create
+malcolm_template = "ubuntu-22.04-cloudinit"
+
+# CTF Challenges - Isolated CTF Environment
+ctf_enabled  = false  # Set to true when ready to create
+ctf_template = "ubuntu-22.04-cloudinit"
