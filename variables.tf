@@ -1,27 +1,5 @@
-# Proxmox Provider Variables
-variable "proxmox_api_url" {
-  description = "Proxmox API URL (e.g., https://proxmox.local:8006/api2/json)"
-  type        = string
-}
-
-variable "proxmox_api_token_id" {
-  description = "Proxmox API Token ID (e.g., terraform@pve!terraform-token)"
-  type        = string
-}
-
-variable "proxmox_api_token_secret" {
-  description = "Proxmox API Token Secret"
-  type        = string
-  sensitive   = true
-}
-
-variable "proxmox_tls_insecure" {
-  description = "Skip TLS verification (set to true for self-signed certificates)"
-  type        = bool
-  default     = true
-}
-
 # Proxmox Node Configuration
+# Note: API credentials are loaded from secrets.sops.yaml via SOPS provider
 variable "proxmox_node" {
   description = "Proxmox node name (e.g., pve, k10)"
   type        = string

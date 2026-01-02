@@ -1,12 +1,8 @@
 # Terraform Variables Example
 # Copy this file to terraform.tfvars and fill in your values
 # WARNING: Do not commit terraform.tfvars to git!
-
-# Proxmox API Configuration
-proxmox_api_url          = "https://proxmox.local:8006/api2/json"
-proxmox_api_token_id     = "terraform@pve!terraform-token"
-proxmox_api_token_secret = "your-secret-token-here"
-proxmox_tls_insecure     = true
+#
+# Note: API credentials are managed in secrets.sops.yaml (SOPS + age)
 
 # Proxmox Node Configuration
 proxmox_node    = "pve"  # Change to your node name (e.g., "k10")

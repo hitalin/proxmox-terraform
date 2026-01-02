@@ -69,37 +69,32 @@ sudo apt update && sudo apt install terraform
 
 ## Quick Start
 
-### 1. Configure Credentials
+### 1. Configure Secrets (SOPS + age)
+
+Secrets are managed with [SOPS](https://github.com/getsops/sops) and [age](https://github.com/FiloSottile/age), sharing the same key as yamisskey-ansible.
 
 ```bash
-# Copy example files
-cp .env.example .env
-cp terraform.tfvars.example terraform.tfvars
+# Edit encrypted secrets (requires age key at ~/.config/sops/age/key.txt)
+sops secrets.sops.yaml
 
-# Edit with your values
-nano .env
+# Copy terraform.tfvars template
+cp terraform.tfvars.example terraform.tfvars
 nano terraform.tfvars
 ```
 
-**Important**: Update these values in `terraform.tfvars`:
-- `proxmox_api_token_secret`: Your actual API token
-- `proxmox_node`: Your Proxmox node name (run `pvesh get /nodes` to check)
-- `test_vm_template`: Template name (e.g., `ubuntu-22.04-cloudinit`)
+**secrets.sops.yaml** contains:
+- `proxmox_api_url`: Proxmox API endpoint
+- `proxmox_api_token_id`: API token ID
+- `proxmox_api_token_secret`: API token secret
+- `proxmox_tls_insecure`: TLS verification (true for self-signed certs)
 
 ### 2. Initialize & Test
 
 ```bash
-# Load environment variables
-source .env
-
-# Initialize Terraform
+# Initialize Terraform (downloads SOPS provider)
 terraform init
 
-# Test Proxmox connectivity
-curl -k -H "Authorization: PVEAPIToken=${PM_API_TOKEN_ID}=${PM_API_TOKEN_SECRET}" \
-  "${PM_API_URL}/version"
-
-# Plan test VM creation
+# Plan test VM creation (SOPS automatically decrypts secrets)
 terraform plan
 
 # Create test VM
@@ -140,13 +135,12 @@ terraform {
 
 ## Security Best Practices
 
-1. Never commit `.env` files or credentials
+1. Secrets managed via SOPS + age (shared key with yamisskey-ansible)
 2. Use API tokens with minimum required permissions
 3. Enable state encryption at rest (R2 encryption)
 4. Rotate API tokens regularly
 5. Review `terraform plan` output before applying
-6. Use workspaces for environment separation
-7. Enable audit logging in Proxmox and Cloudflare
+6. Never commit decrypted secrets (`.gitignore` configured)
 
 ## Integration with yamisskey-ansible
 

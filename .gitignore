@@ -28,6 +28,11 @@ terraform.rc
 .env.*
 !.env.example
 
+# SOPS - decrypted secrets (never commit)
+secrets.yaml
+secrets.decrypted.yaml
+*.decrypted.*
+
 # Lock file (commit this in real project)
 # .terraform.lock.hcl
 

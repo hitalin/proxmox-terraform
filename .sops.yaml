@@ -1,0 +1,8 @@
+creation_rules:
+  # Terraform secrets file
+  - path_regex: .*secrets\.sops\.yaml$
+    age: age1paqwux2ffqspe3ltux45wvn2vzdy24hwj8utgt0en64afeys4vuqxjpcvl
+
+  # Environment files
+  - path_regex: .*\.env\.sops$
+    age: age1paqwux2ffqspe3ltux45wvn2vzdy24hwj8utgt0en64afeys4vuqxjpcvl
