@@ -1,203 +1,55 @@
 # yamisskey-terraform
 
-Terraform configuration for managing Proxmox VE virtual machines in the yamisskey infrastructure.
+Proxmox VE VM provisioning for yamisskey security research infrastructure.
 
-## Overview
+## VMs
 
-This project handles VM provisioning for the security research and CTF environment running on Proxmox VE (GMKtec NucBox K10). For the complete infrastructure overview, see [yamisskey-host](https://github.com/yamisskey-dev/yamisskey-host).
+| VM | ID | Spec | Network | Purpose |
+|----|-----|------|---------|---------|
+| OPNsense | 101 | 4c/4GB/32GB | vmbr0,1,2 | Router/Firewall |
+| T-Pot | - | 8c/16GB/256GB | vmbr2 | Honeypot (ELK) |
+| Malcolm | - | 12c/24GB/500GB | vmbr2 | Traffic analysis |
+| CTF | - | 4c/4GB/100GB | vmbr2 | CTF environment |
 
-### Managed VMs
+## Network
 
-| VM | vCPU | RAM | Disk | Purpose |
-|----|------|-----|------|---------|
-| **OPNsense** | 4c | 4GB | 32GB | Router, Firewall, HAProxy, WireGuard |
-| **T-Pot (Hive)** | 8c | 16GB | 256GB | Honeypot platform with full ELK stack (Cowrie, Dionaea, Kibana) |
-| **Malcolm** | 12c | 24GB | 500GB | Network traffic analysis (Zeek, Suricata, PCAP) |
-| **CTF-Challenges** | 4c | 4GB | 100GB | Isolated CTF challenge execution environment |
+| Bridge | Subnet | Purpose |
+|--------|--------|---------|
+| vmbr0 | 192.168.1.0/24 | WAN/Management |
+| vmbr1 | 10.0.1.0/24 | LAN |
+| vmbr2 | 10.0.2.0/24 | DMZ (isolated) |
 
-**Total allocation**: 28 vCPU, 48GB RAM (leaving 16GB for Proxmox host and overhead)
-
-**Notes**:
-- CTFd platform (web UI, scoreboard) runs on balthasar/caspar servers via Docker
-- T-Pot runs in Hive mode with full ELK stack for honeypot visualization
-- Malcolm focuses on network traffic analysis (PCAP, Zeek, Suricata)
-- Configuration based on official requirements: [T-Pot](https://github.com/telekom-security/tpotce), [Malcolm](https://github.com/cisagov/Malcolm/blob/main/docs/system-requirements.md), [OPNsense](https://docs.opnsense.org/manual/hardware.html)
-
-### Separation of Concerns
-
-- **Terraform** (this project): VM creation, resource allocation, network topology
-- **Ansible** ([yamisskey-ansible](https://github.com/yamisskey-dev/yamisskey-ansible)): OS configuration, application deployment
-
-## Prerequisites
-
-### 1. Create Proxmox Cloud-init Template
+## Setup
 
 ```bash
-# SSH to Proxmox host
-ssh root@proxmox.local
-
-# Download Ubuntu 22.04 cloud image
-wget https://cloud-images.ubuntu.com/releases/22.04/release/ubuntu-22.04-server-cloudimg-amd64.img
-
-# Create template VM
-qm create 9000 --name ubuntu-22.04-cloudinit --memory 2048 --cores 2 --net0 virtio,bridge=vmbr1
-qm importdisk 9000 ubuntu-22.04-server-cloudimg-amd64.img local-lvm
-qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0
-qm set 9000 --boot c --bootdisk scsi0
-qm set 9000 --ide2 local-lvm:cloudinit
-qm set 9000 --serial0 socket --vga serial0
-qm set 9000 --agent enabled=1
-qm template 9000
-```
-
-### 2. Create Proxmox API Token
-
-In Proxmox Web UI:
-- Navigate to: **Datacenter → Permissions → API Tokens → Add**
-- Token ID: `terraform@pve!terraform-token`
-- Uncheck "Privilege Separation"
-- Save the secret (you won't see it again)
-
-### 3. Install Terraform
-
-```bash
-# Ubuntu/Debian
-wget -O- https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt update && sudo apt install terraform
-```
-
-## Quick Start
-
-### 1. Configure Secrets (SOPS + age)
-
-Secrets are managed with [SOPS](https://github.com/getsops/sops) and [age](https://github.com/FiloSottile/age), sharing the same key as yamisskey-ansible.
-
-```bash
-# Edit encrypted secrets (requires age key at ~/.config/sops/age/key.txt)
+# 1. Configure secrets (SOPS + age, same key as yamisskey-ansible)
 sops secrets.sops.yaml
 
-# Copy terraform.tfvars template
-cp terraform.tfvars.example terraform.tfvars
-nano terraform.tfvars
-```
-
-**secrets.sops.yaml** contains:
-- `proxmox_api_url`: Proxmox API endpoint
-- `proxmox_api_token_id`: API token ID
-- `proxmox_api_token_secret`: API token secret
-- `proxmox_tls_insecure`: TLS verification (true for self-signed certs)
-
-### 2. Initialize & Test
-
-```bash
-# Initialize Terraform (downloads SOPS provider)
+# 2. Deploy
 terraform init
-
-# Plan test VM creation (SOPS automatically decrypts secrets)
-terraform plan
-
-# Create test VM
-terraform apply
+terraform apply -var="opnsense_enabled=true"
 ```
 
-### 3. Verify & Cleanup
+## Templates (on Proxmox)
 
 ```bash
-# Check outputs
-terraform output
+# Ubuntu 24.04 (ID: 9000)
+qm create 9000 --name ubuntu-24.04-cloudinit --memory 2048 --cores 2 --net0 virtio,bridge=vmbr0
+qm importdisk 9000 ubuntu-24.04-server-cloudimg-amd64.img local-lvm
+qm set 9000 --scsihw virtio-scsi-pci --scsi0 local-lvm:vm-9000-disk-0 --boot c --bootdisk scsi0
+qm set 9000 --ide2 local-lvm:cloudinit --serial0 socket --vga serial0 --agent enabled=1
+qm template 9000
 
-# Destroy test VM after verification
-terraform destroy
+# OPNsense ISO
+wget https://mirror.ams1.nl.leaseweb.net/opnsense/releases/25.1/OPNsense-25.1-dvd-amd64.iso.bz2
+bunzip2 OPNsense-25.1-dvd-amd64.iso.bz2
 ```
 
-## State Management
+## Docs
 
-State is stored in Cloudflare R2 bucket with versioning enabled:
+- [Setup Guide](docs/setup.md) - Detailed setup instructions
 
-```hcl
-terraform {
-  backend "s3" {
-    bucket = "yamisskey-terraform-state"
-    key    = "production/terraform.tfstate"
-    region = "auto"
+## Related
 
-    endpoints = {
-      s3 = "https://<account_id>.r2.cloudflarestorage.com"
-    }
-
-    skip_credentials_validation = true
-    skip_region_validation      = true
-    skip_requesting_account_id  = true
-  }
-}
-```
-
-## Security Best Practices
-
-1. Secrets managed via SOPS + age (shared key with yamisskey-ansible)
-2. Use API tokens with minimum required permissions
-3. Enable state encryption at rest (R2 encryption)
-4. Rotate API tokens regularly
-5. Review `terraform plan` output before applying
-6. Never commit decrypted secrets (`.gitignore` configured)
-
-## Integration with yamisskey-ansible
-
-After Terraform provisions infrastructure:
-
-```bash
-# 1. Terraform creates VMs
-cd yamisskey-terraform
-terraform apply
-
-# 2. Ansible configures VMs
-cd ../yamisskey-ansible
-task run PLAYBOOK=opnsense
-```
-
-## Troubleshooting
-
-### Proxmox API connection fails
-```bash
-# Verify API access
-curl -k -H "Authorization: PVEAPIToken=$PM_API_TOKEN_ID=$PM_API_TOKEN_SECRET" \
-  "$PM_API_URL/version"
-```
-
-### State lock issues
-```bash
-# Force unlock (use with caution)
-terraform force-unlock <lock_id>
-```
-
-### Provider version conflicts
-```bash
-# Update provider versions
-terraform init -upgrade
-```
-
-## Resources
-
-- [Terraform Proxmox Provider](https://registry.terraform.io/providers/Telmate/proxmox/latest/docs)
-- [Terraform Cloudflare Provider](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
-- [Cloudflare R2 Backend](https://developer.cloudflare.com/r2/examples/terraform/)
-- [yamisskey-ansible](https://github.com/yamisskey-dev/yamisskey-ansible)
-- [yamisskey-host](https://github.com/yamisskey-dev/yamisskey-host)
-
-## Contributing
-
-1. Create feature branch
-2. Run `terraform fmt` and `terraform validate`
-3. Test with `terraform plan`
-4. Submit pull request with clear description
-
-## License
-
-MIT License - See [LICENSE](LICENSE) file for details
-
-## Related Projects
-
-- [yamisskey-ansible](https://github.com/yamisskey-dev/yamisskey-ansible) - Server configuration management
-- [yamisskey-host](https://github.com/yamisskey-dev/yamisskey-host) - Infrastructure documentation
-- [yamisskey](https://github.com/yamisskey-dev/yamisskey) - Misskey instance
+- [yamisskey-ansible](https://github.com/yamisskey-dev/yamisskey-ansible) - Configuration
+- [yamisskey-host](https://github.com/yamisskey-dev/yamisskey-host) - Documentation
