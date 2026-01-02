@@ -60,9 +60,14 @@ resource "proxmox_virtual_environment_vm" "opnsense" {
   description = "OPNsense Router/Firewall with HAProxy and WireGuard"
   node_name   = var.proxmox_node
   tags        = ["terraform", "production", "network"]
+  vm_id       = 101
 
-  # OPNsense requires manual ISO install, no clone
-  # After first boot, convert to template or manage via Ansible
+  # Boot from ISO for initial installation
+  cdrom {
+    enabled   = true
+    file_id   = var.opnsense_iso
+    interface = "ide2"
+  }
 
   cpu {
     cores = 4
@@ -77,33 +82,37 @@ resource "proxmox_virtual_environment_vm" "opnsense" {
     datastore_id = var.proxmox_storage
     size         = 32
     interface    = "scsi0"
+    file_format  = "raw"
   }
 
-  # WAN - External network
+  # WAN - External network (vtnet0 in OPNsense)
   network_device {
     bridge = "vmbr0"
+    model  = "virtio"
   }
 
-  # LAN - Internal network
+  # LAN - Internal network (vtnet1 in OPNsense)
   network_device {
     bridge = "vmbr1"
+    model  = "virtio"
   }
 
-  # DMZ - Security research zone
+  # DMZ - Security research zone (vtnet2 in OPNsense)
   network_device {
     bridge = "vmbr2"
-  }
-
-  # Management network
-  network_device {
-    bridge = "vmbr3"
+    model  = "virtio"
   }
 
   bios    = "seabios"
   on_boot = true
+  started = false # Don't auto-start, manual install required
 
   lifecycle {
     prevent_destroy = true
+    ignore_changes = [
+      cdrom, # Allow removing ISO after install
+      started,
+    ]
   }
 }
 

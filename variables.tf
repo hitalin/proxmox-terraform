@@ -67,6 +67,12 @@ variable "opnsense_enabled" {
   default     = false
 }
 
+variable "opnsense_iso" {
+  description = "OPNsense ISO file ID (e.g., local:iso/OPNsense-25.1-dvd-amd64.iso)"
+  type        = string
+  default     = "local:iso/OPNsense-25.1-dvd-amd64.iso"
+}
+
 # =============================================================================
 # T-Pot Hive - Honeypot Platform
 # =============================================================================
