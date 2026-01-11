@@ -6,7 +6,7 @@ Proxmox VE VM provisioning for yamisskey security research infrastructure.
 
 | VM | ID | Spec | Network | Purpose |
 |----|-----|------|---------|---------|
-| OPNsense | 101 | 4c/4GB/32GB | vmbr0,1,2 | Router/Firewall |
+| OPNsense | 101 | 4c/8GB/32GB | vmbr0,1,2 | Router/Firewall |
 | T-Pot | - | 8c/16GB/256GB | vmbr2 | Honeypot (ELK) |
 | Malcolm | - | 12c/24GB/500GB | vmbr2 | Traffic analysis |
 | CTF | - | 4c/4GB/100GB | vmbr2 | CTF environment |
@@ -18,6 +18,40 @@ Proxmox VE VM provisioning for yamisskey security research infrastructure.
 | vmbr0 | 192.168.1.0/24 | WAN/Management |
 | vmbr1 | 10.0.1.0/24 | LAN |
 | vmbr2 | 10.0.2.0/24 | DMZ (isolated) |
+
+## Hosting
+
+```mermaid
+graph TB
+    classDef host fill:#e2e8f0,stroke:#334155,stroke-width:2px
+    classDef net fill:#fff3e0,stroke:#ef6c00
+    classDef sec fill:#fee2e2,stroke:#991b1b
+    classDef mon fill:#d1fae5,stroke:#047857
+    classDef ctf fill:#fef3c7,stroke:#d97706
+
+    subgraph proxmox[GMKtec K10 - Proxmox VE]
+        direction TB
+
+        subgraph networks[Virtual Networks]
+            vmbr0[vmbr0 WAN<br/>192.168.1.0/24]:::net
+            vmbr1[vmbr1 LAN<br/>10.0.1.0/24]:::net
+            vmbr2[vmbr2 DMZ<br/>10.0.2.0/24]:::net
+        end
+
+        subgraph vms[Virtual Machines]
+            opnsense[OPNsense<br/>4c/8GB]:::sec
+            tpot[T-Pot Hive<br/>8c/16GB<br/>Cowrie/Dionaea/ELK]:::sec
+            malcolm[Malcolm<br/>12c/24GB<br/>Zeek/Suricata/Arkime]:::mon
+            ctf[CTF<br/>4c/4GB<br/>Docker隔離]:::ctf
+        end
+    end
+
+    vmbr0 --> opnsense
+    opnsense --> vmbr1 & vmbr2
+    vmbr2 --> tpot & malcolm & ctf
+
+    class proxmox host
+```
 
 ## Setup
 
