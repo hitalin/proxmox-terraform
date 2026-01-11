@@ -43,6 +43,10 @@ secrets.decrypted.yaml
 *.swo
 *~
 
+# OPNsense config (contains passwords/keys)
+config-*.xml
+config.xml
+
 # OS
 .DS_Store
 Thumbs.db
