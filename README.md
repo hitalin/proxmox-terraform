@@ -1,4 +1,4 @@
-# yamisskey-terraform
+# proxmox-terraform
 
 Proxmox VE VM provisioning for yamisskey security research infrastructure.
 
@@ -56,7 +56,7 @@ graph TB
 ## Setup
 
 ```bash
-# 1. Configure secrets (SOPS + age, same key as yamisskey-ansible)
+# 1. Configure secrets (SOPS + age)
 sops secrets.sops.yaml
 
 # 2. Deploy
@@ -83,7 +83,3 @@ bunzip2 OPNsense-25.1-dvd-amd64.iso.bz2
 
 - [Setup Guide](docs/setup.md) - Detailed setup instructions
 
-## Related
-
-- [yamisskey-ansible](https://github.com/yamisskey-dev/yamisskey-ansible) - Configuration
-- [yamisskey-host](https://github.com/yamisskey-dev/yamisskey-host) - Documentation
