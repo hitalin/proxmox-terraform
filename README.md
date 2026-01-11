@@ -9,7 +9,7 @@ Proxmox VE VM provisioning for yamisskey security research infrastructure.
 | OPNsense | 101 | 4c/8GB/32GB | vmbr0,1,2 | Router/Firewall | Active |
 | T-Pot | 100 | 8c/16GB/256GB | vmbr2 | Honeypot (ELK) | Active |
 | Malcolm | 102 | 12c/24GB/500GB | vmbr2 | Traffic analysis | Active |
-| CTF | - | 4c/4GB/100GB | vmbr2 | CTF environment | Planned |
+| CTFd | - | 4c/4GB/100GB | vmbr2 | CTF platform | Planned |
 | GOAD | - | 4c/20GB/80GB | vmbr1 | AD pentest lab | Planned |
 
 ## Network
@@ -43,7 +43,7 @@ graph TB
             opnsense[OPNsense<br/>4c/8GB]:::sec
             tpot[T-Pot Hive<br/>8c/16GB<br/>Cowrie/Dionaea/ELK]:::sec
             malcolm[Malcolm<br/>12c/24GB<br/>Zeek/Suricata/Arkime]:::mon
-            ctf[CTF<br/>4c/4GB<br/>Docker隔離]:::ctf
+            ctfd[CTFd<br/>4c/4GB<br/>Docker]:::ctf
             goad[GOAD Light<br/>4c/20GB<br/>AD攻撃練習]:::ctf
         end
     end
@@ -51,7 +51,7 @@ graph TB
     vmbr0 --> opnsense
     opnsense --> vmbr1 & vmbr2
     vmbr1 --> goad
-    vmbr2 --> tpot & malcolm & ctf
+    vmbr2 --> tpot & malcolm & ctfd
 
     class proxmox host
 ```
@@ -91,9 +91,11 @@ AD攻撃練習環境。GOAD-Lightを予定（メモリ20GB、ディスク80GB）
 - https://orange-cyberdefense.github.io/GOAD/
 - Proxmoxプロバイダ対応
 
-### CTF
+### CTFd
 
-Docker隔離環境でのCTFプラットフォーム。
+CTFプラットフォーム。スコアボード + 問題管理 + Docker隔離。
+
+- https://github.com/CTFd/CTFd
 
 ## Docs
 
