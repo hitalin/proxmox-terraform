@@ -51,6 +51,72 @@ resource "proxmox_virtual_environment_vm" "test_vm" {
 }
 
 # =============================================================================
+# OPNsense - Router/Firewall
+# =============================================================================
+resource "proxmox_virtual_environment_vm" "opnsense" {
+  count = var.opnsense_enabled ? 1 : 0
+
+  name        = "opnsense"
+  description = "OPNsense Router/Firewall with HAProxy and WireGuard"
+  node_name   = var.proxmox_node
+  tags        = ["terraform", "production", "network"]
+  vm_id       = 101
+
+  # Boot from ISO for initial installation
+  cdrom {
+    enabled   = true
+    file_id   = var.opnsense_iso
+    interface = "ide2"
+  }
+
+  cpu {
+    cores = 4
+    type  = "host"
+  }
+
+  memory {
+    dedicated = 4096
+  }
+
+  disk {
+    datastore_id = var.proxmox_storage
+    size         = 32
+    interface    = "scsi0"
+    file_format  = "raw"
+  }
+
+  # WAN - External network (vtnet0 in OPNsense)
+  network_device {
+    bridge = "vmbr0"
+    model  = "virtio"
+  }
+
+  # LAN - Internal network (vtnet1 in OPNsense)
+  network_device {
+    bridge = "vmbr1"
+    model  = "virtio"
+  }
+
+  # DMZ - Security research zone (vtnet2 in OPNsense)
+  network_device {
+    bridge = "vmbr2"
+    model  = "virtio"
+  }
+
+  bios    = "seabios"
+  on_boot = true
+  started = false # Don't auto-start, manual install required
+
+  lifecycle {
+    prevent_destroy = true
+    ignore_changes = [
+      cdrom, # Allow removing ISO after install
+      started,
+    ]
+  }
+}
+
+# =============================================================================
 # T-Pot Hive - Honeypot Platform (full ELK stack)
 # =============================================================================
 resource "proxmox_virtual_environment_vm" "tpot" {
@@ -80,9 +146,9 @@ resource "proxmox_virtual_environment_vm" "tpot" {
     interface    = "scsi0"
   }
 
-  # Direct connection to WAN via IX2105 router
+  # DMZ network for honeypot exposure
   network_device {
-    bridge = "vmbr0"
+    bridge = "vmbr2"
   }
 
   initialization {
@@ -133,9 +199,9 @@ resource "proxmox_virtual_environment_vm" "malcolm" {
     interface    = "scsi0"
   }
 
-  # Direct connection to WAN via IX2105 router
+  # DMZ network for traffic capture
   network_device {
-    bridge = "vmbr0"
+    bridge = "vmbr2"
   }
 
   initialization {
@@ -186,9 +252,9 @@ resource "proxmox_virtual_environment_vm" "ctf_challenges" {
     interface    = "scsi0"
   }
 
-  # Direct connection to WAN via IX2105 router
+  # DMZ network for isolation
   network_device {
-    bridge = "vmbr0"
+    bridge = "vmbr2"
   }
 
   initialization {
