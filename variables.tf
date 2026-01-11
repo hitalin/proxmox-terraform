@@ -59,21 +59,6 @@ variable "test_vm_network_bridge" {
 }
 
 # =============================================================================
-# OPNsense - Router/Firewall
-# =============================================================================
-variable "opnsense_enabled" {
-  description = "Enable OPNsense VM creation"
-  type        = bool
-  default     = false
-}
-
-variable "opnsense_iso" {
-  description = "OPNsense ISO file ID (e.g., local:iso/OPNsense-25.1-dvd-amd64.iso)"
-  type        = string
-  default     = "local:iso/OPNsense-25.1-dvd-amd64.iso"
-}
-
-# =============================================================================
 # T-Pot Hive - Honeypot Platform
 # =============================================================================
 variable "tpot_enabled" {

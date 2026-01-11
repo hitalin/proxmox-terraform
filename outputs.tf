@@ -18,17 +18,6 @@ output "test_vm_ipv4_addresses" {
 # Production VM Outputs
 # =============================================================================
 
-# OPNsense
-output "opnsense_id" {
-  description = "OPNsense VM ID"
-  value       = var.opnsense_enabled ? proxmox_virtual_environment_vm.opnsense[0].vm_id : null
-}
-
-output "opnsense_name" {
-  description = "OPNsense VM name"
-  value       = var.opnsense_enabled ? proxmox_virtual_environment_vm.opnsense[0].name : null
-}
-
 # T-Pot Hive
 output "tpot_id" {
   description = "T-Pot Hive VM ID"
@@ -87,11 +76,6 @@ output "vm_summary" {
       vm_id          = proxmox_virtual_environment_vm.test_vm[0].vm_id
       name           = proxmox_virtual_environment_vm.test_vm[0].name
       ipv4_addresses = proxmox_virtual_environment_vm.test_vm[0].ipv4_addresses
-    } : null
-
-    opnsense = var.opnsense_enabled ? {
-      vm_id = proxmox_virtual_environment_vm.opnsense[0].vm_id
-      name  = proxmox_virtual_environment_vm.opnsense[0].name
     } : null
 
     tpot = var.tpot_enabled ? {
