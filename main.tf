@@ -152,6 +152,10 @@ resource "proxmox_virtual_environment_vm" "tpot" {
   }
 
   initialization {
+    user_account {
+      username = data.sops_file.secrets.data["vm_credentials.tpot.username"]
+      password = data.sops_file.secrets.data["vm_credentials.tpot.password"]
+    }
     ip_config {
       ipv4 {
         address = "dhcp"
@@ -206,6 +210,10 @@ resource "proxmox_virtual_environment_vm" "ctfd" {
   }
 
   initialization {
+    user_account {
+      username = data.sops_file.secrets.data["vm_credentials.ctfd.username"]
+      password = data.sops_file.secrets.data["vm_credentials.ctfd.password"]
+    }
     ip_config {
       ipv4 {
         address = "dhcp"
