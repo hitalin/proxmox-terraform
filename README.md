@@ -124,3 +124,8 @@ bunzip2 OPNsense-25.1-dvd-amd64.iso.bz2
 ## Docs
 
 - [Setup Guide](docs/setup.md) - Detailed setup instructions
+
+## Related Repositories
+
+- [yamisskey-host](https://github.com/yamisskey-dev/yamisskey-host) - Architecture diagrams for all services
+- [yamisskey-ansible](https://github.com/yamisskey-dev/yamisskey-ansible) - Provisioning for VMs created here (tpot / openclaw / ctfd are managed as Ansible hosts)
