@@ -426,7 +426,7 @@ resource "proxmox_virtual_environment_vm" "haos" {
   lifecycle {
     prevent_destroy = true
     ignore_changes = [
-      disk,    # HAOS auto-resizes disk on first boot
+      disk, # HAOS auto-resizes disk on first boot
       started,
     ]
   }
